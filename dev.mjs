@@ -30,6 +30,13 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    if (url.pathname === "/donate-qr.png") {
+      response.setHeader("Content-Type", "image/png");
+      response.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      response.end(await readFile(new URL("./public/donate-qr.png", import.meta.url)));
+      return;
+    }
+
     if (url.pathname === "/favicon.ico") {
       response.statusCode = 204;
       response.end();

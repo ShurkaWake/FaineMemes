@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import pageHandler from "../api/page.js";
 import newHandler from "../api/new.js";
 import {
@@ -48,6 +49,11 @@ test("converts Google Drive and YouTube Music links", () => {
     youtubeEmbedUrl("https://music.youtube.com/watch?v=dQw4w9WgXcQ&si=hello"),
     "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0",
   );
+});
+
+test("includes a local PNG for the donation QR code", async () => {
+  const png = await readFile(new URL("../public/donate-qr.png", import.meta.url));
+  assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
 });
 
 test("chooses a different meme when possible", () => {
@@ -101,8 +107,13 @@ test("the page cookie survives refresh and /new replaces it", async (context) =>
   assert.match(refreshedHtml, new RegExp(`Мем №${selectedId}`));
   assert.match(
     refreshedHtml,
-    /Цей мем тут залишиться, доки ти не задонатиш на новий\./,
+    /href="https:\/\/send\.monobank\.ua\/jar\/7t8JsafPMD"[^>]*>задонатиш на новий<\/a>/,
   );
+  assert.match(
+    refreshedHtml,
+    /class="donation-qr"\s+src="\/donate-qr\.png"/,
+  );
+  assert.doesNotMatch(refreshedHtml, /send\.monobank\.ua\/widget\.html|<iframe[^>]+donation/);
   assert.doesNotMatch(refreshedHtml, /Покажи інший/);
 
   const next = await newHandler.fetch(
