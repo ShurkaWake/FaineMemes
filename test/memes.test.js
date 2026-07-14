@@ -67,7 +67,7 @@ one,javascript:alert(1),https://music.youtube.com/watch?v=dQw4w9WgXcQ`;
   assert.throws(() => rowsToMemes(parseCsv(unsafeCsv)), /некоректне посилання на мем/);
 });
 
-test("the page cookie survives refresh and /new replaces it", async (context) => {
+test("only /new chooses a meme and the page preserves it", async (context) => {
   const originalFetch = globalThis.fetch;
   const originalUrl = process.env.GOOGLE_SHEET_CSV_URL;
   const originalTtl = process.env.SHEET_CACHE_TTL_MS;
@@ -89,13 +89,38 @@ test("the page cookie survives refresh and /new replaces it", async (context) =>
 
   process.env.GOOGLE_SHEET_CSV_URL = "https://example.test/memes.csv";
   process.env.SHEET_CACHE_TTL_MS = "60000";
-  globalThis.fetch = async () => new Response(csv, { status: 200 });
+  let sheetFetches = 0;
+  globalThis.fetch = async () => {
+    sheetFetches += 1;
+    return new Response(csv, { status: 200 });
+  };
   resetMemeCache();
 
-  const first = await pageHandler.fetch(new Request("https://memes.test/"));
-  assert.equal(first.status, 200);
+  const empty = await pageHandler.fetch(new Request("https://memes.test/"));
+  assert.equal(empty.status, 200);
+  assert.equal(empty.headers.get("set-cookie"), null);
+  assert.equal(sheetFetches, 0);
+  const emptyHtml = await empty.text();
+  assert.match(emptyHtml, /Твій мем трошки соромиться/);
+  assert.match(
+    emptyHtml,
+    /href="https:\/\/send\.monobank\.ua\/jar\/7t8JsafPMD"[^>]*>задонатити<\/a>/,
+  );
+  assert.doesNotMatch(emptyHtml, /Мем №/);
+
+  const stale = await pageHandler.fetch(
+    new Request("https://memes.test/", { headers: { cookie: "meme_id=missing" } }),
+  );
+  assert.equal(stale.headers.get("set-cookie"), null);
+  assert.match(await stale.text(), /Твій мем трошки соромиться/);
+  assert.equal(sheetFetches, 1);
+
+  const first = await newHandler.fetch(new Request("https://memes.test/new"));
+  assert.equal(first.status, 303);
+  assert.equal(first.headers.get("location"), "/");
   const firstCookie = first.headers.get("set-cookie");
   assert.match(firstCookie, /^meme_id=(one|two);/);
+  assert.equal(sheetFetches, 1);
 
   const cookiePair = firstCookie.split(";", 1)[0];
   const selectedId = decodeURIComponent(cookiePair.split("=")[1]);

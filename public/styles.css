@@ -202,6 +202,19 @@ a {
   box-shadow: var(--shadow);
 }
 
+.donation-empty {
+  min-height: min(620px, 72vh);
+  margin-top: clamp(36px, 8vh, 90px);
+}
+
+.donation-empty .refresh-note {
+  max-width: 18ch;
+  font-size: clamp(2rem, 4.5vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
 .refresh-note {
   max-width: 18ch;
   margin: 10px 0 0;
@@ -226,6 +239,25 @@ a {
   margin: 16px 0 0;
   font-size: 0.9rem;
   font-weight: 700;
+}
+
+.empty-shell {
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+}
+
+.empty-shell .brand {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.empty-shell .eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.empty-shell .donation-hint {
+  font-weight: 600;
 }
 
 .donation-qr-link {
@@ -324,6 +356,11 @@ code {
     gap: 20px;
     padding: 18px;
     box-shadow: 5px 5px 0 var(--line);
+  }
+
+  .donation-empty {
+    min-height: auto;
+    margin-top: 32px;
   }
 
   .donation-qr-link {

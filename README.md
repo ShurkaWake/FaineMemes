@@ -28,7 +28,7 @@ In Google Sheets, use **File → Share → Publish to web**, select the correct 
 
 Port `3001` is the local default. Set the `PORT` environment variable if you need a different one.
 
-The home page stores the chosen meme ID in an HTTP-only cookie. Refreshing `/` keeps the same meme. Visiting `/new` chooses a different meme when possible, updates the cookie, and redirects to `/`.
+The home page never chooses a meme by itself. Without a valid meme cookie it shows the donation prompt. Visiting `/new` chooses a meme, stores its ID in an HTTP-only cookie, and redirects to `/`; refreshing `/` then keeps that meme.
 
 ## Deploy to Vercel
 
