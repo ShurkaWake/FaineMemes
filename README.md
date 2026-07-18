@@ -6,11 +6,11 @@ A dependency-free Vercel app that pairs a random Google Drive meme with a YouTub
 
 The first row must contain these headers:
 
-| id | link to meme | youtube music link |
-| --- | --- | --- |
-| 1 | `https://drive.google.com/file/d/.../view` | `https://music.youtube.com/watch?v=...` |
+| id | link to meme | youtube music link | owner |
+| --- | --- | --- | --- |
+| 1 | `https://drive.google.com/file/d/.../view` | `https://music.youtube.com/watch?v=...` | `https://instagram.com/author` |
 
-Each completed row needs all three values, and each `id` must be unique. Incomplete rows are ignored, so you can safely add a new meme while the site is live. Share every Drive image so that anyone with the link can view it.
+Each completed row needs all four values, and each `id` must be unique. Incomplete rows are ignored, so you can safely add a new meme while the site is live. Share every Drive image so that anyone with the link can view it.
 
 In Google Sheets, use **File → Share → Publish to web**, select the correct tab and choose **Comma-separated values (.csv)**. Copy that URL.
 
@@ -33,7 +33,7 @@ The home page never chooses a meme by itself. Without a valid meme cookie it sho
 ## Deploy to Vercel
 
 1. Import this folder or its Git repository into Vercel.
-2. Add `GOOGLE_SHEET_CSV_URL` in **Project Settings → Environment Variables**.
+2. Add `GOOGLE_SHEET_CSV_URL` in **Project Settings → Environment Variables**. Add `GOOGLE_FORM_URL` to show the optional meme-submission button.
 3. Deploy. There is no build command and no framework preset required.
 
 Vercel automatically serves the JavaScript files in `api/` as Node.js functions. `vercel.json` maps `/` and `/new` to those functions.

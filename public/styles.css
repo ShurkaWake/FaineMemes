@@ -189,6 +189,10 @@ a {
   background: var(--paper);
 }
 
+.button-accent {
+  background: var(--coral);
+}
+
 .donation {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);

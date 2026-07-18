@@ -12,9 +12,9 @@ import {
   youtubeEmbedUrl,
 } from "../lib/memes.js";
 
-const csv = `id,link to meme,youtube music link
-one,https://drive.google.com/file/d/abc123/view,https://music.youtube.com/watch?v=dQw4w9WgXcQ
-two,"https://drive.google.com/open?id=def456","https://youtu.be/aqz-KE-bpKQ"`;
+const csv = `id,link to meme,youtube music link,owner
+one,https://drive.google.com/file/d/abc123/view,https://music.youtube.com/watch?v=dQw4w9WgXcQ,https://instagram.com/author-one
+two,"https://drive.google.com/open?id=def456","https://youtu.be/aqz-KE-bpKQ","https://t.me/author_two"`;
 
 test("parses the requested sheet columns", () => {
   const memes = rowsToMemes(parseCsv(csv));
@@ -23,16 +23,18 @@ test("parses the requested sheet columns", () => {
     id: "one",
     driveUrl: "https://drive.google.com/file/d/abc123/view",
     musicUrl: "https://music.youtube.com/watch?v=dQw4w9WgXcQ",
+    ownerUrl: "https://instagram.com/author-one",
   });
 });
 
 test("ignores incomplete rows while the sheet is being edited", () => {
-  const inProgressCsv = `id,link to meme,youtube music link
-one,https://drive.google.com/file/d/abc123/view,https://music.youtube.com/watch?v=dQw4w9WgXcQ
-two,https://drive.google.com/file/d/unfinished/view,
-three,,https://music.youtube.com/watch?v=aqz-KE-bpKQ
-,https://drive.google.com/file/d/no-id/view,https://music.youtube.com/watch?v=aqz-KE-bpKQ
-four,https://drive.google.com/file/d/finished/view,https://youtu.be/aqz-KE-bpKQ`;
+  const inProgressCsv = `id,link to meme,youtube music link,owner
+one,https://drive.google.com/file/d/abc123/view,https://music.youtube.com/watch?v=dQw4w9WgXcQ,https://example.com/one
+two,https://drive.google.com/file/d/unfinished/view,,https://example.com/two
+three,,https://music.youtube.com/watch?v=aqz-KE-bpKQ,https://example.com/three
+,https://drive.google.com/file/d/no-id/view,https://music.youtube.com/watch?v=aqz-KE-bpKQ,https://example.com/no-id
+four,https://drive.google.com/file/d/finished.view,https://youtu.be/aqz-KE-bpKQ,https://example.com/four
+five,https://drive.google.com/file/d/no-owner/view,https://youtu.be/aqz-KE-bpKQ,`;
 
   assert.deepEqual(
     rowsToMemes(parseCsv(inProgressCsv)).map((meme) => meme.id),
@@ -62,15 +64,23 @@ test("chooses a different meme when possible", () => {
 });
 
 test("rejects unsafe links from the sheet", () => {
-  const unsafeCsv = `id,link to meme,youtube music link
-one,javascript:alert(1),https://music.youtube.com/watch?v=dQw4w9WgXcQ`;
+  const unsafeCsv = `id,link to meme,youtube music link,owner
+one,javascript:alert(1),https://music.youtube.com/watch?v=dQw4w9WgXcQ,https://example.com/owner`;
   assert.throws(() => rowsToMemes(parseCsv(unsafeCsv)), /некоректне посилання на мем/);
+
+  const unsafeOwnerCsv = `id,link to meme,youtube music link,owner
+one,https://drive.google.com/file/d/abc123/view,https://music.youtube.com/watch?v=dQw4w9WgXcQ,javascript:alert(1)`;
+  assert.throws(
+    () => rowsToMemes(parseCsv(unsafeOwnerCsv)),
+    /некоректне посилання на автора/,
+  );
 });
 
 test("only /new chooses a meme and the page preserves it", async (context) => {
   const originalFetch = globalThis.fetch;
   const originalUrl = process.env.GOOGLE_SHEET_CSV_URL;
   const originalTtl = process.env.SHEET_CACHE_TTL_MS;
+  const originalFormUrl = process.env.GOOGLE_FORM_URL;
 
   context.after(() => {
     globalThis.fetch = originalFetch;
@@ -84,11 +94,17 @@ test("only /new chooses a meme and the page preserves it", async (context) => {
     } else {
       process.env.SHEET_CACHE_TTL_MS = originalTtl;
     }
+    if (originalFormUrl === undefined) {
+      delete process.env.GOOGLE_FORM_URL;
+    } else {
+      process.env.GOOGLE_FORM_URL = originalFormUrl;
+    }
     resetMemeCache();
   });
 
   process.env.GOOGLE_SHEET_CSV_URL = "https://example.test/memes.csv";
   process.env.SHEET_CACHE_TTL_MS = "60000";
+  process.env.GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/example/viewform";
   let sheetFetches = 0;
   globalThis.fetch = async () => {
     sheetFetches += 1;
@@ -130,6 +146,14 @@ test("only /new chooses a meme and the page preserves it", async (context) => {
   assert.equal(refreshed.headers.get("set-cookie"), null);
   const refreshedHtml = await refreshed.text();
   assert.match(refreshedHtml, new RegExp(`Мем №${selectedId}`));
+  assert.match(
+    refreshedHtml,
+    /href="https:\/\/(?:instagram\.com\/author-one|t\.me\/author_two)"[^>]*>\s*Посилання на автора\s*<\/a>/,
+  );
+  assert.match(
+    refreshedHtml,
+    /href="https:\/\/docs\.google\.com\/forms\/d\/e\/example\/viewform"[^>]*>\s*Запропонувати мем\s*<\/a>/,
+  );
   assert.match(
     refreshedHtml,
     /href="https:\/\/send\.monobank\.ua\/jar\/7t8JsafPMD"[^>]*>задонатиш на новий<\/a>/,
