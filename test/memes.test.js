@@ -151,16 +151,23 @@ test("only /new chooses a meme and the page preserves it", async (context) => {
     : { url: "https://t.me/author_two/", username: "author_two" };
   assert.ok(
     refreshedHtml.includes(
-      `<p class="author-credit">Автор: <a href="${expectedOwner.url}" target="_blank" rel="noopener noreferrer">${expectedOwner.username}</a></p>`,
+      `<a class="button button-secondary author-button" href="${expectedOwner.url}" target="_blank" rel="noopener noreferrer">
+          Автор: ${expectedOwner.username}
+        </a>`,
     ),
+  );
+  assert.match(
+    refreshedHtml,
+    /<div class="meme-meta">[\s\S]*class="button button-secondary author-button"[\s\S]*Відкрити оригінал на Google Drive[\s\S]*class="button button-accent desktop-suggestion-button"[\s\S]*Запропонувати мем[\s\S]*<\/div>\s*<section class="soundtrack"/,
   );
   assert.match(refreshedHtml, /<h1 id="soundtrack-title">Слухати пісню:<\/h1>/);
   assert.match(
     refreshedHtml,
     /href="https:\/\/docs\.google\.com\/forms\/d\/e\/example\/viewform"[^>]*>\s*Запропонувати мем\s*<\/a>/,
   );
+  assert.equal(refreshedHtml.match(/Запропонувати мем/g)?.length, 2);
   assert.ok(
-    refreshedHtml.indexOf('class="donation"') < refreshedHtml.indexOf("Запропонувати мем"),
+    refreshedHtml.indexOf('class="donation"') < refreshedHtml.lastIndexOf("Запропонувати мем"),
   );
   assert.doesNotMatch(refreshedHtml, /Посилання на автора|Вмикай\. Так смішніше\./);
   assert.match(
