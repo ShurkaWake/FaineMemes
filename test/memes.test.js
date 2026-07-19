@@ -160,7 +160,7 @@ test("only /new chooses a meme and the page preserves it", async (context) => {
     refreshedHtml,
     /<div class="meme-meta">[\s\S]*class="button button-secondary author-button"[\s\S]*Відкрити оригінал на Google Drive[\s\S]*class="button button-accent desktop-suggestion-button"[\s\S]*Запропонувати мем[\s\S]*<\/div>\s*<section class="soundtrack"/,
   );
-  assert.match(refreshedHtml, /<h1 id="soundtrack-title">Слухати пісню:<\/h1>/);
+  assert.match(refreshedHtml, /<h1 id="soundtrack-title">Відчуй емоцію з піснею.<\/h1>/);
   assert.match(
     refreshedHtml,
     /href="https:\/\/docs\.google\.com\/forms\/d\/e\/example\/viewform"[^>]*>\s*Запропонувати мем\s*<\/a>/,
