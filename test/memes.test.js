@@ -13,8 +13,8 @@ import {
 } from "../lib/memes.js";
 
 const csv = `id,link to meme,youtube music link,owner
-one,https://drive.google.com/file/d/abc123/view,https://music.youtube.com/watch?v=dQw4w9WgXcQ,https://instagram.com/author-one
-two,"https://drive.google.com/open?id=def456","https://youtu.be/aqz-KE-bpKQ","https://t.me/author_two"`;
+one,https://drive.google.com/file/d/abc123/view,https://music.youtube.com/watch?v=dQw4w9WgXcQ,https://instagram.com/author-one/
+two,"https://drive.google.com/open?id=def456","https://youtu.be/aqz-KE-bpKQ","https://t.me/author_two/"`;
 
 test("parses the requested sheet columns", () => {
   const memes = rowsToMemes(parseCsv(csv));
@@ -23,7 +23,7 @@ test("parses the requested sheet columns", () => {
     id: "one",
     driveUrl: "https://drive.google.com/file/d/abc123/view",
     musicUrl: "https://music.youtube.com/watch?v=dQw4w9WgXcQ",
-    ownerUrl: "https://instagram.com/author-one",
+    ownerUrl: "https://instagram.com/author-one/",
   });
 });
 
@@ -146,14 +146,23 @@ test("only /new chooses a meme and the page preserves it", async (context) => {
   assert.equal(refreshed.headers.get("set-cookie"), null);
   const refreshedHtml = await refreshed.text();
   assert.match(refreshedHtml, new RegExp(`Мем №${selectedId}`));
-  assert.match(
-    refreshedHtml,
-    /href="https:\/\/(?:instagram\.com\/author-one|t\.me\/author_two)"[^>]*>\s*Посилання на автора\s*<\/a>/,
+  const expectedOwner = selectedId === "one"
+    ? { url: "https://instagram.com/author-one/", username: "author-one" }
+    : { url: "https://t.me/author_two/", username: "author_two" };
+  assert.ok(
+    refreshedHtml.includes(
+      `<p class="author-credit">Автор: <a href="${expectedOwner.url}" target="_blank" rel="noopener noreferrer">${expectedOwner.username}</a></p>`,
+    ),
   );
+  assert.match(refreshedHtml, /<h1 id="soundtrack-title">Слухати пісню:<\/h1>/);
   assert.match(
     refreshedHtml,
     /href="https:\/\/docs\.google\.com\/forms\/d\/e\/example\/viewform"[^>]*>\s*Запропонувати мем\s*<\/a>/,
   );
+  assert.ok(
+    refreshedHtml.indexOf('class="donation"') < refreshedHtml.indexOf("Запропонувати мем"),
+  );
+  assert.doesNotMatch(refreshedHtml, /Посилання на автора|Вмикай\. Так смішніше\./);
   assert.match(
     refreshedHtml,
     /href="https:\/\/send\.monobank\.ua\/jar\/7t8JsafPMD"[^>]*>задонатиш на новий<\/a>/,

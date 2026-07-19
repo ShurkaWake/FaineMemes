@@ -103,6 +103,23 @@ a {
   object-fit: contain;
 }
 
+.author-credit {
+  margin: 20px 0 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.author-credit a {
+  color: inherit;
+  text-decoration-color: var(--coral);
+  text-decoration-thickness: 0.16em;
+  text-underline-offset: 0.14em;
+}
+
+.author-credit a:hover {
+  color: #bd2c18;
+}
+
 .soundtrack {
   display: grid;
   grid-template-columns: minmax(220px, 0.8fr) minmax(280px, 1.2fr);
@@ -179,6 +196,7 @@ a {
 .button:focus-visible,
 .brand:focus-visible,
 .music-fallback:focus-visible,
+.author-credit a:focus-visible,
 .donation-link:focus-visible,
 .donation-qr-link:focus-visible {
   outline: 4px solid #fff;
@@ -191,6 +209,11 @@ a {
 
 .button-accent {
   background: var(--coral);
+}
+
+.page-end-actions {
+  justify-content: flex-end;
+  margin-top: 32px;
 }
 
 .donation {
