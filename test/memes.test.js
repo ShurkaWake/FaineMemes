@@ -152,13 +152,13 @@ test("only /new chooses a meme and the page preserves it", async (context) => {
   assert.ok(
     refreshedHtml.includes(
       `<a class="button button-secondary author-button" href="${expectedOwner.url}" target="_blank" rel="noopener noreferrer">
-          Автор: ${expectedOwner.username}
+          Запропоновано: ${expectedOwner.username}
         </a>`,
     ),
   );
   assert.match(
     refreshedHtml,
-    /<div class="meme-meta">[\s\S]*class="button button-secondary author-button"[\s\S]*Відкрити оригінал на Google Drive[\s\S]*class="button button-accent desktop-suggestion-button"[\s\S]*Запропонувати мем[\s\S]*<\/div>\s*<section class="soundtrack"/,
+    /<div class="meme-meta">[\s\S]*class="button button-secondary author-button"[\s\S]*Завантажити[\s\S]*class="button button-accent desktop-suggestion-button"[\s\S]*Запропонувати мем[\s\S]*<\/div>\s*<section class="soundtrack"/,
   );
   assert.match(refreshedHtml, /<h1 id="soundtrack-title">Відчуй емоцію з піснею<\/h1>/);
   assert.match(
